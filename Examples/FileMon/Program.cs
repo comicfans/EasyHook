@@ -19,8 +19,19 @@ namespace FileMon
         {
             for (int i = 0; i < InFileNames.Length; i++)
             {
-                Console.WriteLine(InFileNames[i]);
+                //Console.WriteLine("create file {0}",InFileNames[i]);
             }
+        }
+
+        public void OnOpenFile(Int32 InClientPID, String[] filenames)
+        {
+
+            foreach(var s in filenames)
+            {
+                //Console.WriteLine("open file {0}", s);
+
+            }
+
         }
 
         public void ReportException(Exception InInfo)
@@ -39,55 +50,24 @@ namespace FileMon
 
         static void Main(string[] args)
         {
-            Int32 TargetPID = 0;
-            string targetExe = null;
 
-            // Load the parameter
-            while ((args.Length != 1) || !Int32.TryParse(args[0], out TargetPID) || !File.Exists(args[0]))
-            {
-                if (TargetPID > 0)
-                {
-                    break;
-                }
-                if (args.Length != 1 || !File.Exists(args[0]))
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Usage: FileMon %PID%");
-                    Console.WriteLine("   or: FileMon PathToExecutable");
-                    Console.WriteLine();
-                    Console.Write("Please enter a process Id or path to executable: ");
+            string targetExe = @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe";
+            string tar1=@"D:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\amd64\cl.exe";
 
-                    args = new string[] { Console.ReadLine() };
-
-                    if (String.IsNullOrEmpty(args[0])) return;
-                }
-                else
-                {
-                    targetExe = args[0];
-                    break;
-                }
-            }
+            int TargetPID;
+            
 
             try
             {
                 RemoteHooking.IpcCreateServer<FileMonInterface>(ref ChannelName, WellKnownObjectMode.SingleCall);
 
                 string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "FileMonInject.dll");
-                if (String.IsNullOrEmpty(targetExe))
-                {
-                    RemoteHooking.Inject(
-                        TargetPID,
-                        injectionLibrary,
-                        injectionLibrary,
-                        ChannelName);
 
-                    Console.WriteLine("Injected to process {0}", TargetPID);
-                }
-                else
-                {
-                    RemoteHooking.CreateAndInject(targetExe, "", 0, InjectionOptions.DoNotRequireStrongName, injectionLibrary, injectionLibrary, out TargetPID, ChannelName);
-                    Console.WriteLine("Created and injected process {0}", TargetPID);
-                }
+                var arg = @" -E vs_link_exe --intdir=CMakeFiles\main.dir --manifests  -- C:\PROGRA~2\MICROS~3\2017\COMMUN~1\VC\Tools\MSVC\1410~1.247\bin\HostX86\x86\link.exe /nologo CMakeFiles\main.dir\main.cpp.obj  /out:main.exe /implib:main.lib /pdb:main.pdb /version:0.0  /machine:X86 /debug /INCREMENTAL /subsystem:console  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib";
+
+                var arg1=@"  /nologo /TP   /DWIN32 /D_WINDOWS /W3 /GR /EHsc /D_DEBUG /MDd /Zi /Ob0 /Od /RTC1  /FoI:\test_proj\build\CMakeFiles\main.dir\main.cpp.obj /FdI:\test_proj\build\CMakeFiles\main.dir\ /FS -c I:\test_proj\main.cpp /I G: /I H:";
+                RemoteHooking.CreateAndInject(tar1, arg1 , 0, InjectionOptions.DoNotRequireStrongName, injectionLibrary, injectionLibrary, out TargetPID, ChannelName);
+                Console.WriteLine("Created and injected process {0}", TargetPID);
                 Console.WriteLine("<Press any key to exit>");
                 Console.ReadKey();
             }

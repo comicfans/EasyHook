@@ -501,7 +501,6 @@ Parameters:
     STARTUPINFO				StartInfo;
 	PROCESS_INFORMATION		ProcessInfo;
 	WCHAR					FullExePath[MAX_PATH + 1];
-	WCHAR                   FullCommandLine[MAX_PATH + 1];
     WCHAR					CurrentDir[MAX_PATH + 1];
     WCHAR*					FilePart;
     NTSTATUS            NtStatus;
@@ -525,8 +524,6 @@ Parameters:
 
     // compute current directory...
     RtlCopyMemory(FullExePath, CurrentDir, sizeof(FullExePath));
-    
-    swprintf_s(FullCommandLine, MAX_PATH, L"\"%s\" %s", FullExePath, InCommandLine);
 
     *FilePart = 0;
 
@@ -536,7 +533,7 @@ Parameters:
 
     if(!CreateProcessW(
 		    FullExePath, 
-		    FullCommandLine, 
+		    InCommandLine, 
             NULL, NULL,  
             FALSE, 
 		    InCustomFlags | CREATE_SUSPENDED,
